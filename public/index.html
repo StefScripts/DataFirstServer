@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEO Freelancer API</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1,
+      h2 {
+        color: #333;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+      .endpoint {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-left: 4px solid #0070f3;
+        background-color: #f8f9fa;
+      }
+      .method {
+        font-weight: bold;
+        display: inline-block;
+        width: 60px;
+      }
+      .path {
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SEO Freelancer API</h1>
+    <p>The API server is running correctly. This page serves as a placeholder for the frontend.</p>
+
+    <h2>API Endpoints:</h2>
+
+    <h3>Bookings</h3>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/availability</span> - Get available time slots for a date</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/availability/next</span> - Get the next available date</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">POST</span> <span class="path">/api/bookings</span> - Create a new booking</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/bookings/:token</span> - Get booking details by token</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/bookings/confirm/:token</span> - Confirm a booking</div>
+    </div>
+
+    <h3>Admin</h3>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/admin/consultations</span> - Get upcoming consultations</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">POST</span> <span class="path">/api/admin/blocked-slots</span> - Block a time slot</div>
+    </div>
+
+    <h3>Blog</h3>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/blog-posts</span> - Get published blog posts</div>
+    </div>
+    <div class="endpoint">
+      <div><span class="method">GET</span> <span class="path">/api/blog-posts/:slug</span> - Get a specific blog post</div>
+    </div>
+
+    <p>For a complete list of endpoints, refer to the <a href="/api/docs">API documentation</a> or check the server's README.</p>
+  </body>
+</html>
