@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from './logger';
 
 /**
  * Error response interface
@@ -40,8 +41,6 @@ export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunctio
  * Global error handler middleware
  */
 export const errorHandler = (err: Error | AppError, req: Request, res: Response, _next: NextFunction) => {
-  console.error('Error:', err);
-
   // Set defaults
   let statusCode = 500;
   let errorMessage = 'Internal Server Error';
@@ -52,8 +51,21 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
     statusCode = err.status;
     errorMessage = err.message;
     details = err.details;
+
+    // Don't log 4xx errors as errors
+    if (statusCode >= 400 && statusCode < 500) {
+      logger.warn(`Client error: ${errorMessage}`, {
+        status: statusCode,
+        path: req.path,
+        details
+      });
+    } else {
+      logger.error(`Server error: ${errorMessage}`, err);
+    }
   } else {
+    // For unexpected errors, always log as error
     errorMessage = err.message || errorMessage;
+    logger.error(`Unhandled error: ${errorMessage}`, err);
   }
 
   // Check if headers have already been sent
@@ -67,7 +79,7 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
       message: errorMessage
     };
 
-    if (details) {
+    if (details && (process.env.NODE_ENV !== 'production' || statusCode < 500)) {
       errorResponse.details = details;
     }
 
@@ -76,8 +88,6 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
   }
 
   // For non-API routes (HTML requests)
-  // In production, show a generic error page
-  // In development, show detailed error
   if (process.env.NODE_ENV === 'production') {
     return res.status(statusCode).send(`
       <html>

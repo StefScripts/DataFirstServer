@@ -2,13 +2,21 @@ import { Router } from 'express';
 import { BlogController } from '../controllers/blogController';
 import { asyncHandler } from '../utils/errorHandler';
 import { requireAuth } from '../middlewares/auth';
+import { cacheMiddleware } from '../middlewares/cache';
 
 const router = Router();
 const blogController = new BlogController();
 
 // Public routes
-router.get('/blog-posts', asyncHandler(blogController.getPublishedPosts));
-router.get('/blog-posts/:slug', asyncHandler(blogController.getPostBySlug));
+router.get('/blog-posts', cacheMiddleware({ duration: 300 }), asyncHandler(blogController.getPublishedPosts));
+router.get(
+  '/blog-posts/:slug',
+  cacheMiddleware({
+    duration: 600,
+    cacheKey: (req) => `blog-post-${req.params.slug}`
+  }),
+  asyncHandler(blogController.getPostBySlug)
+);
 
 // Admin routes (require authentication)
 router.get('/admin/blog-posts', requireAuth, asyncHandler(blogController.getAllPosts));
