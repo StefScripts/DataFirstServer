@@ -3,13 +3,8 @@ import { blogPosts } from '../db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { AppError } from '../utils/errorHandler';
 
-/**
- * Service for handling blog post operations
- */
 export class BlogService {
-  /**
-   * Get all published blog posts
-   */
+  // Get all published blog posts
   async getPublishedPosts() {
     const posts = await db.query.blogPosts.findMany({
       where: eq(blogPosts.published, true),
@@ -28,9 +23,7 @@ export class BlogService {
     return posts || [];
   }
 
-  /**
-   * Get a specific blog post by slug
-   */
+  // Get a specific blog post by slug
   async getPostBySlug(slug: string) {
     const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug)).limit(1);
 
@@ -41,9 +34,7 @@ export class BlogService {
     return post;
   }
 
-  /**
-   * Get all blog posts (admin)
-   */
+  // Get all blog posts (admin)
   async getAllPosts() {
     const posts = await db.query.blogPosts.findMany({
       orderBy: [desc(blogPosts.createdAt)]
@@ -52,9 +43,7 @@ export class BlogService {
     return posts || [];
   }
 
-  /**
-   * Get a specific blog post by ID (admin)
-   */
+  // Get a specific blog post by ID (admin)
   async getPostById(id: number) {
     const [post] = await db
       .select()
@@ -69,9 +58,7 @@ export class BlogService {
     return post;
   }
 
-  /**
-   * Create a new blog post
-   */
+  // Create a new blog post
   async createPost(postData: {
     title: string;
     content: string;
@@ -117,9 +104,7 @@ export class BlogService {
     return newPost;
   }
 
-  /**
-   * Update an existing blog post
-   */
+  // Update an existing blog post
   async updatePost(
     id: number,
     postData: {
@@ -165,9 +150,7 @@ export class BlogService {
     return updatedPost;
   }
 
-  /**
-   * Delete a blog post
-   */
+  // Delete a blog post
   async deletePost(id: number) {
     const [deletedPost] = await db.delete(blogPosts).where(eq(blogPosts.id, id)).returning();
 

@@ -4,13 +4,8 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { AppError } from '../utils/errorHandler';
 import { toLocalDate } from '../utils/dateHelpers';
 
-/**
- * Service for handling blocked time slots
- */
 export class BlockedSlotsService {
-  /**
-   * Get blocked and booked slots for a specific date
-   */
+  // Get blocked and booked slots for a specific date
   async getSlotsByDate(date: Date) {
     const dateStr = toLocalDate(date);
 
@@ -32,9 +27,7 @@ export class BlockedSlotsService {
     };
   }
 
-  /**
-   * Block a single time slot
-   */
+  // Block a single time slot
   async blockTimeSlot(date: Date, time: string, reason: string = '') {
     const dateStr = toLocalDate(date);
 
@@ -71,92 +64,7 @@ export class BlockedSlotsService {
     return { message: 'Time slot blocked successfully', blockedSlot: newBlockedSlot };
   }
 
-  // /**
-  //  * Block multiple time slots
-  //  */
-  // async blockBulkTimeSlots(dates: Date[], times: string[], reason: string = '') {
-  //   if (!dates.length || !times.length) {
-  //     throw new AppError('Dates and times arrays are required', 400);
-  //   }
-
-  //   const results = {
-  //     successful: [] as { date: string; times: string[] }[],
-  //     conflicts: [] as { date: string; times: string[] }[]
-  //   };
-
-  //   // Process each date
-  //   for (const date of dates) {
-  //     const dateStr = toLocalDate(date);
-  //     const dateResults = {
-  //       successful: [] as string[],
-  //       conflicts: [] as string[]
-  //     };
-
-  //     // Check for existing blocked or booked slots
-  //     const [existingBlocked, existingBooked] = await Promise.all([
-  //       db.query.blockedSlots.findMany({
-  //         where: eq(blockedSlots.date, dateStr),
-  //         columns: { time: true }
-  //       }),
-  //       db.query.bookings.findMany({
-  //         where: and(eq(bookings.date, dateStr), eq(bookings.cancelled, false)),
-  //         columns: { time: true }
-  //       })
-  //     ]);
-
-  //     // Check each time slot for conflicts
-  //     const unavailableTimes = new Set([...existingBlocked.map((slot) => slot.time), ...existingBooked.map((slot) => slot.time)]);
-
-  //     // Separate times into conflicts and available
-  //     times.forEach((time) => {
-  //       if (unavailableTimes.has(time)) {
-  //         dateResults.conflicts.push(time);
-  //       } else {
-  //         dateResults.successful.push(time);
-  //       }
-  //     });
-
-  //     // If there are any non-conflicting times, block them
-  //     if (dateResults.successful.length > 0) {
-  //       const blockedSlotValues = dateResults.successful.map((time) => ({
-  //         date: dateStr,
-  //         time,
-  //         reason
-  //       }));
-
-  //       await db.insert(blockedSlots).values(blockedSlotValues);
-  //       results.successful.push({
-  //         date: dateStr,
-  //         times: dateResults.successful
-  //       });
-  //     }
-
-  //     // Record conflicts if any
-  //     if (dateResults.conflicts.length > 0) {
-  //       results.conflicts.push({
-  //         date: dateStr,
-  //         times: dateResults.conflicts
-  //       });
-  //     }
-  //   }
-
-  //   // Return results with appropriate status code
-  //   const hasConflicts = results.conflicts.length > 0;
-  //   const hasSuccesses = results.successful.length > 0;
-
-  //   if (!hasSuccesses && hasConflicts) {
-  //     throw new AppError('All selected time slots have conflicts', 409, results);
-  //   }
-
-  //   return {
-  //     message: hasConflicts ? 'Some time slots were blocked successfully, but there were conflicts' : 'All time slots were blocked successfully',
-  //     results
-  //   };
-  // }
-
-  /**
-   * Block multiple time slots with batch processing
-   */
+  // Block multiple time slots with batch processing
   async blockBulkTimeSlots(dates: Date[], times: string[], reason: string = '') {
     if (!dates.length || !times.length) {
       throw new AppError('Dates and times arrays are required', 400);
@@ -253,41 +161,7 @@ export class BlockedSlotsService {
     };
   }
 
-  // /**
-  //  * Block recurring time slots
-  //  */
-  // async blockRecurringTimeSlots(daysOfWeek: string[], numberOfWeeks: number, times: string[], reason: string = 'Recurring block') {
-  //   if (!daysOfWeek.length || !times.length || !numberOfWeeks) {
-  //     throw new AppError('Days of week, number of weeks, and times are required', 400);
-  //   }
-
-  //   // Generate all dates for the selected days and weeks
-  //   const dates: Date[] = [];
-  //   const now = new Date();
-
-  //   for (let week = 0; week < numberOfWeeks; week++) {
-  //     for (const dayOfWeek of daysOfWeek) {
-  //       let date = new Date(now);
-  //       date.setUTCDate(date.getUTCDate() + week * 7);
-
-  //       const currentDayOfWeek = date.getUTCDay();
-  //       const targetDayOfWeek = Number(dayOfWeek);
-
-  //       // Calculate days to add to get to the target day this week
-  //       const daysToAdd = (targetDayOfWeek - currentDayOfWeek + 7) % 7;
-  //       date.setUTCDate(date.getUTCDate() + daysToAdd);
-
-  //       dates.push(date);
-  //     }
-  //   }
-
-  //   // Use the existing bulk blocking mechanism
-  //   return this.blockBulkTimeSlots(dates, times, reason);
-  // }
-
-  /**
-   * Block recurring time slots with optimized batch processing
-   */
+  // Block recurring time slots with optimized batch processing
   async blockRecurringTimeSlots(daysOfWeek: string[], numberOfWeeks: number, times: string[], reason: string = 'Recurring block') {
     if (!daysOfWeek.length || !times.length || !numberOfWeeks) {
       throw new AppError('Days of week, number of weeks, and times are required', 400);
@@ -321,9 +195,7 @@ export class BlockedSlotsService {
     return this.blockBulkTimeSlots(dates, times, reason);
   }
 
-  /**
-   * Unblock time slots
-   */
+  // Unblock time slots
   async unblockTimeSlots(date: Date, times: string[]) {
     if (!times.length) {
       throw new AppError('Times array is required', 400);

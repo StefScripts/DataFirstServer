@@ -8,22 +8,15 @@ import { emailService } from './emailService';
 
 const scryptAsync = promisify(scrypt);
 
-/**
- * Service for authentication operations
- */
 export class AuthService {
-  /**
-   * Hash a password
-   */
+  // Hash a password
   async hashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString('hex');
     const buf = (await scryptAsync(password, salt, 64)) as Buffer;
     return `${buf.toString('hex')}.${salt}`;
   }
 
-  /**
-   * Compare a password with a stored hash
-   */
+  // Compare a password with a stored hash
   async comparePasswords(supplied: string, stored: string): Promise<boolean> {
     const [hashed, salt] = stored.split('.');
     const hashedBuf = Buffer.from(hashed, 'hex');
@@ -31,17 +24,13 @@ export class AuthService {
     return timingSafeEqual(hashedBuf, suppliedBuf);
   }
 
-  /**
-   * Get a user by username
-   */
+  // Get a user by username
   async getUserByUsername(username: string) {
     const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
     return user;
   }
 
-  /**
-   * Create a new user
-   */
+  // Create a new user
   async createUser(username: string, password: string) {
     const hashedPassword = await this.hashPassword(password);
 
@@ -63,9 +52,7 @@ export class AuthService {
     return newUser;
   }
 
-  /**
-   * Generate a password reset token
-   */
+  // Generate a password reset token
   async generateResetToken(userId: number) {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
@@ -84,9 +71,7 @@ export class AuthService {
     return resetToken;
   }
 
-  /**
-   * Request a password reset
-   */
+  // Request a password reset
   async requestPasswordReset(email: string) {
     const user = await this.getUserByUsername(email);
 
@@ -104,10 +89,7 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Reset password with token
-   */
-
+  // Reset password with token
   // Modified version of resetPassword() method
   async resetPassword(token: string, newPassword: string) {
     // Find the token

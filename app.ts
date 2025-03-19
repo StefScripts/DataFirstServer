@@ -8,9 +8,6 @@ import apiRoutes from './routes/api';
 import { setupAuth } from './auth';
 import { corsMiddleware } from './middlewares/cors';
 
-/**
- * Create and configure the Express application
- */
 export function createApp(): Express {
   const app = express();
 

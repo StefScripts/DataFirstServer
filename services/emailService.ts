@@ -5,9 +5,6 @@ import { format, parse } from 'date-fns';
 
 dotenv.config();
 
-/**
- * Service for handling email communications
- */
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
@@ -40,9 +37,7 @@ export class EmailService {
     });
   }
 
-  /**
-   * Get the frontend base URL based on environment
-   */
+  // Get the frontend base URL based on environment
   private getFrontendBaseUrl(): string {
     // First check for explicit FRONTEND_URL
     if (process.env.FRONTEND_URL) {
@@ -53,30 +48,22 @@ export class EmailService {
     return process.env.NODE_ENV === 'production' ? 'https://datafirstseo.com' : 'http://localhost:5173';
   }
 
-  /**
-   * Generate a random token
-   */
+  // Generate a random token
   generateToken(): string {
     return randomBytes(32).toString('hex');
   }
 
-  /**
-   * Format time from 24-hour to 12-hour format
-   */
+  // Format time from 24-hour to 12-hour format
   private formatTime(time: string): string {
     return format(parse(time, 'HH:mm', new Date()), 'h:mm a');
   }
 
-  /**
-   * Format date to human-readable format
-   */
+  // Format date to human-readable format
   private formatDate(date: Date): string {
     return format(date, 'EEEE, MMMM d, yyyy');
   }
 
-  /**
-   * Send a booking confirmation email
-   */
+  // Send a booking confirmation email
   async sendBookingConfirmation({
     id,
     name,
@@ -162,9 +149,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send booking updated email
-   */
+  // Send booking updated email
   async sendBookingUpdatedEmail({
     name,
     email,
@@ -222,9 +207,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send booking cancelled email
-   */
+  // Send booking cancelled email
   async sendBookingCancelledEmail({ name, email, date, time }: { name: string; email: string; date: Date; time: string }): Promise<void> {
     const formattedDate = this.formatDate(date);
     const formattedTime = this.formatTime(time);
@@ -271,9 +254,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send notification to admin about booking activities
-   */
+  // Send notification to admin about booking activities
   async sendAdminNotification({
     type,
     name,
@@ -370,9 +351,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send password reset email
-   */
+  // Send password reset email
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
     const baseUrl = this.getFrontendBaseUrl();
     const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
@@ -411,9 +390,7 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send contact form message
-   */
+  // Send contact form message
   async sendContactFormMessage({ name, email, company, message }: { name: string; email: string; company: string; message: string }): Promise<void> {
     const mailOptions = {
       from: process.env.ZOHO_EMAIL,

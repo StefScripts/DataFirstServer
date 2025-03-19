@@ -6,13 +6,8 @@ import { toLocalDate, TIME_SLOTS } from '../utils/dateHelpers';
 import { generateToken } from '../utils/email';
 import { sendBookingConfirmation, sendBookingUpdatedEmail, sendBookingCancelledEmail } from '../utils/email';
 
-/**
- * Service for handling booking-related operations
- */
 export class BookingService {
-  /**
-   * Check if a specific time slot is available
-   */
+  // Check if a specific time slot is available
   async checkSlotAvailability(date: Date, time: string): Promise<boolean> {
     const [existingBooking, blockedSlot] = await Promise.all([
       db.query.bookings.findFirst({
@@ -26,9 +21,7 @@ export class BookingService {
     return !existingBooking && !blockedSlot;
   }
 
-  /**
-   * Get availability for a specific date
-   */
+  // Get availability for a specific date
   async getAvailability(date: Date, minimumNoticeHours: number = 20) {
     const requestDate = new Date(date);
     const now = new Date();
@@ -63,73 +56,7 @@ export class BookingService {
     return { unavailableTimes: Array.from(unavailableTimes) };
   }
 
-  // /**
-  //  * Find the next available date
-  //  */
-  // async getNextAvailableDate(minimumNoticeHours: number = 20) {
-  //   const now = new Date();
-  //   const minimumNoticeDate = new Date(now.getTime() + minimumNoticeHours * 60 * 60 * 1000);
-  //   let checkDate = new Date(now);
-  //   checkDate.setUTCHours(0, 0, 0, 0); // Start of day
-  //   let foundAvailableSlot = false;
-
-  //   // Immediately move to next business day if current day is weekend
-  //   while (checkDate.getUTCDay() === 0 || checkDate.getUTCDay() === 6) {
-  //     checkDate.setUTCDate(checkDate.getUTCDate() + 1);
-  //   }
-
-  //   // Check up to 30 days ahead
-  //   while (!foundAvailableSlot && checkDate <= new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)) {
-  //     // Skip weekends
-  //     if (checkDate.getUTCDay() !== 0 && checkDate.getUTCDay() !== 6) {
-  //       const dateString = toLocalDate(checkDate);
-
-  //       // Get unavailable slots for this date
-  //       const [bookedSlots, blockedTimeSlots] = await Promise.all([
-  //         db.query.bookings.findMany({
-  //           where: and(eq(bookings.date, dateString), eq(bookings.cancelled, false)),
-  //           columns: { time: true }
-  //         }),
-  //         db.query.blockedSlots.findMany({
-  //           where: eq(blockedSlots.date, dateString),
-  //           columns: { time: true }
-  //         })
-  //       ]);
-
-  //       const unavailableTimes = new Set([...bookedSlots.map((slot) => slot.time), ...blockedTimeSlots.map((slot) => slot.time)]);
-
-  //       // Mark slots within minimum notice hours as unavailable
-  //       TIME_SLOTS.forEach((slot) => {
-  //         const [hours] = slot.split(':').map(Number);
-  //         const slotDate = new Date(checkDate);
-  //         slotDate.setUTCHours(hours);
-
-  //         if (slotDate < minimumNoticeDate) {
-  //           unavailableTimes.add(slot);
-  //         }
-  //       });
-
-  //       // If any time slot is available on this day
-  //       if (unavailableTimes.size < TIME_SLOTS.length) {
-  //         foundAvailableSlot = true;
-  //         break;
-  //       }
-  //     }
-
-  //     // Move to next day
-  //     checkDate.setUTCDate(checkDate.getUTCDate() + 1);
-  //   }
-
-  //   if (foundAvailableSlot) {
-  //     return { nextAvailableDate: checkDate.toISOString() };
-  //   } else {
-  //     throw new AppError('No available slots found in the next 30 days', 404);
-  //   }
-  // }
-
-  /**
-   * Get the next available date with optimized querying
-   */
+  // Get the next available date with optimized querying
   async getNextAvailableDate(minimumNoticeHours: number = 20) {
     const now = new Date();
     const minimumNoticeDate = new Date(now.getTime() + minimumNoticeHours * 60 * 60 * 1000);
@@ -220,9 +147,7 @@ export class BookingService {
     throw new AppError('No available slots found in the next 30 days', 404);
   }
 
-  /**
-   * Create a new booking
-   */
+  // Create a new booking
   async createBooking(bookingData: { name: string; email: string; company: string; message?: string; date: Date; time: string }) {
     const { name, email, company, message, date, time } = bookingData;
 
@@ -286,9 +211,7 @@ export class BookingService {
     return newBooking;
   }
 
-  /**
-   * Get booking by confirmation token
-   */
+  // Get booking by confirmation token
   async getBookingByToken(token: string) {
     const booking = await db.query.bookings.findFirst({
       where: eq(bookings.confirmationToken, token)
@@ -301,9 +224,7 @@ export class BookingService {
     return booking;
   }
 
-  /**
-   * Confirm a booking
-   */
+  // Confirm a booking
   async confirmBooking(token: string) {
     const booking = await this.getBookingByToken(token);
 
@@ -320,9 +241,7 @@ export class BookingService {
     return { message: 'Booking confirmed successfully', booking: updatedBooking };
   }
 
-  /**
-   * Update booking date and time
-   */
+  // Update booking date and time
   async updateBooking(token: string, date: Date, time: string) {
     const booking = await this.getBookingByToken(token);
 
@@ -354,9 +273,7 @@ export class BookingService {
     return { message: 'Booking updated successfully', booking: updatedBooking };
   }
 
-  /**
-   * Cancel a booking
-   */
+  // Cancel a booking
   async cancelBooking(token: string) {
     const booking = await this.getBookingByToken(token);
 
@@ -382,22 +299,7 @@ export class BookingService {
     return { message: 'Booking cancelled successfully', booking: cancelledBooking };
   }
 
-  // /**
-  //  * Get upcoming consultations (admin only)
-  //  */
-  // async getUpcomingConsultations() {
-  //   const now = new Date();
-  //   const consultations = await db.query.bookings.findMany({
-  //     where: and(gte(bookings.date, toLocalDate(now)), eq(bookings.cancelled, false)),
-  //     orderBy: [asc(bookings.date), asc(bookings.time)]
-  //   });
-
-  //   return consultations;
-  // }
-
-  /**
-   * Get upcoming consultations with optimized query
-   */
+  // Get upcoming consultations with optimized query
   async getUpcomingConsultations() {
     const now = new Date();
 
@@ -412,9 +314,7 @@ export class BookingService {
     return consultations;
   }
 
-  /**
-   * Cancel a consultation (admin only)
-   */
+  // Cancel a consultation (admin only)
   async cancelConsultationById(id: number) {
     const booking = await db.query.bookings.findFirst({
       where: eq(bookings.id, id)

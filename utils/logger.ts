@@ -3,9 +3,7 @@ import path from 'path';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-/**
- * Simple structured logger with filtering by environment
- */
+// Simple structured logger with filtering by environment
 class Logger {
   private logDir: string;
   private errorLog: fs.WriteStream | null = null;
@@ -27,9 +25,7 @@ class Logger {
     }
   }
 
-  /**
-   * Log a message with specific level
-   */
+  // Log a message with specific level
   private log(level: LogLevel, message: string, data?: any) {
     const timestamp = new Date().toISOString();
     const logEntry = {
@@ -85,9 +81,7 @@ class Logger {
     });
   }
 
-  /**
-   * Log API request
-   */
+  // Log API request
   logRequest(req: any, res: any, duration: number) {
     this.info(`${req.method} ${req.path} ${res.statusCode}`, {
       method: req.method,
@@ -99,9 +93,7 @@ class Logger {
     });
   }
 
-  /**
-   * Properly close logger streams
-   */
+  // Properly close logger streams
   close() {
     this.errorLog?.end();
     this.accessLog?.end();

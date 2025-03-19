@@ -1,18 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 
-/**
- * Error response interface
- */
+// Error response interface
 export interface ErrorResponse {
   message: string;
   details?: string | Record<string, any>;
   status?: number;
 }
 
-/**
- * Custom error class that includes HTTP status code
- */
+// Custom error class that includes HTTP status code
 export class AppError extends Error {
   status: number;
   details?: string | Record<string, any>;
@@ -37,9 +33,7 @@ export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunctio
   };
 };
 
-/**
- * Global error handler middleware
- */
+// Global error handler middleware
 export const errorHandler = (err: Error | AppError, req: Request, res: Response, _next: NextFunction) => {
   // Set defaults
   let statusCode = 500;
@@ -112,9 +106,7 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
   }
 };
 
-/**
- * Creates a 404 error handler for routes that don't exist
- */
+// Creates a 404 error handler for routes that don't exist
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
   // For API routes, always return JSON
   if (req.path.startsWith('/api/')) {
@@ -128,9 +120,7 @@ export const notFoundHandler = (req: Request, res: Response, next: NextFunction)
   next(err);
 };
 
-/**
- * Helper to create standard error responses
- */
+// Helper to create standard error responses
 export const sendErrorResponse = (res: Response, status: number, message: string, details?: any) => {
   // Log the error being sent to help with debugging
   console.log(`Sending error response: status=${status}, message="${message}"`);
@@ -146,9 +136,7 @@ export const sendErrorResponse = (res: Response, status: number, message: string
   });
 };
 
-/**
- * Helper to create standard success responses
- */
+// Helper to create standard success responses
 export const sendSuccessResponse = (res: Response, data: any, status = 200) => {
   res.setHeader('Content-Type', 'application/json');
   return res.status(status).json(data);
