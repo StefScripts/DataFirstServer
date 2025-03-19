@@ -1,4 +1,5 @@
 import express, { type Express, Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
@@ -13,6 +14,24 @@ import { corsMiddleware } from './middlewares/cors';
 export function createApp(): Express {
   const app = express();
 
+  // Enable compression - should be one of the first middlewares
+  app.use(
+    compression({
+      // Only compress responses larger than 1KB
+      threshold: 1024,
+      // Don't compress responses with this content type
+      filter: (req, res) => {
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+        // Use compression by default
+        return compression.filter(req, res);
+      },
+      // Compression level (0-9): higher = better compression but slower
+      level: 6
+    })
+  );
+
   // Basic middleware
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -20,33 +39,30 @@ export function createApp(): Express {
   // Use the CORS middleware
   app.use(corsMiddleware);
 
-  // Request logging middleware
+  // Request logging middleware - optimized version
   app.use((req, res, next) => {
+    // Only log API requests
+    if (!req.path.startsWith('/api')) {
+      return next();
+    }
+
     const start = Date.now();
-    const path = req.path;
-    let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-    const originalResJson = res.json;
-    res.json = function (bodyJson, ...args) {
-      capturedJsonResponse = bodyJson;
-      return originalResJson.apply(res, [bodyJson, ...args]);
-    };
+    // Optimize response capture by not storing large response bodies
+    let statusCode: number;
 
-    res.on('finish', () => {
+    const originalEnd = res.end;
+    res.end = function (chunk?, encoding?) {
+      statusCode = res.statusCode;
+
       const duration = Date.now() - start;
-      if (path.startsWith('/api')) {
-        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-        if (capturedJsonResponse) {
-          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-        }
+      let logLine = `${req.method} ${req.path} ${statusCode} in ${duration}ms`;
 
-        if (logLine.length > 80) {
-          logLine = logLine.slice(0, 79) + '…';
-        }
+      // Keep log line short to save memory
+      console.log(logLine);
 
-        console.log(logLine);
-      }
-    });
+      return originalEnd.call(this, chunk, encoding);
+    };
 
     next();
   });
