@@ -305,7 +305,7 @@ export class BookingService {
 
     // Use a single optimized query with index hint
     const consultations = await db.query.bookings.findMany({
-      where: and(gte(bookings.date, toLocalDate(now)), eq(bookings.cancelled, false), eq(bookings.confirmed, true)),
+      where: and(gte(bookings.date, toLocalDate(now)), eq(bookings.cancelled, false)),
       orderBy: [asc(bookings.date), asc(bookings.time)],
       // Limit the result to improve performance
       limit: 100
