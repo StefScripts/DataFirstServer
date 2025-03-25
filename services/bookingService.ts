@@ -9,12 +9,14 @@ import { sendBookingConfirmation, sendBookingUpdatedEmail, sendBookingCancelledE
 export class BookingService {
   // Check if a specific time slot is available
   async checkSlotAvailability(date: Date, time: string): Promise<boolean> {
+    const dateStr = toLocalDate(date);
+
     const [existingBooking, blockedSlot] = await Promise.all([
       db.query.bookings.findFirst({
-        where: and(eq(bookings.date, toLocalDate(date)), eq(bookings.time, time), eq(bookings.cancelled, false))
+        where: and(eq(bookings.date, dateStr), eq(bookings.time, time), eq(bookings.cancelled, false))
       }),
       db.query.blockedSlots.findFirst({
-        where: and(eq(blockedSlots.date, toLocalDate(date)), eq(blockedSlots.time, time))
+        where: and(eq(blockedSlots.date, dateStr), eq(blockedSlots.time, time))
       })
     ]);
 
@@ -27,14 +29,16 @@ export class BookingService {
     const now = new Date();
     const minimumNoticeDate = new Date(now.getTime() + minimumNoticeHours * 60 * 60 * 1000);
 
+    const dateStr = toLocalDate(requestDate);
+
     // Get all bookings and blocked slots for the specified date
     const [bookedSlots, blockedTimeSlots] = await Promise.all([
       db.query.bookings.findMany({
-        where: and(eq(bookings.date, toLocalDate(requestDate)), eq(bookings.cancelled, false)),
+        where: and(eq(bookings.date, dateStr), eq(bookings.cancelled, false)),
         columns: { time: true }
       }),
       db.query.blockedSlots.findMany({
-        where: eq(blockedSlots.date, toLocalDate(requestDate)),
+        where: eq(blockedSlots.date, dateStr),
         columns: { time: true }
       })
     ]);
@@ -44,10 +48,15 @@ export class BookingService {
 
     // Mark slots within minimum notice hours as unavailable
     TIME_SLOTS.forEach((slot) => {
-      const [hours] = slot.split(':').map(Number);
-      const slotDate = new Date(requestDate);
-      slotDate.setUTCHours(hours);
+      const [hours, minutes = 0] = slot.split(':').map(Number);
 
+      // Create a new date object for the slot with the correct timezone handling
+      const slotDate = new Date(requestDate);
+
+      // Set the hours in the local timezone instead of UTC
+      slotDate.setHours(hours, minutes, 0, 0);
+
+      // Compare with minimum notice date
       if (slotDate < minimumNoticeDate) {
         unavailableTimes.add(slot);
       }
@@ -63,15 +72,16 @@ export class BookingService {
 
     // Start from current day
     let checkDate = new Date(now);
-    checkDate.setUTCHours(0, 0, 0, 0);
+    // Use local timezone for start of day
+    checkDate.setHours(0, 0, 0, 0);
 
     // Skip to next business day if weekend
-    if (checkDate.getUTCDay() === 0) {
+    if (checkDate.getDay() === 0) {
       // Sunday
-      checkDate.setUTCDate(checkDate.getUTCDate() + 1);
-    } else if (checkDate.getUTCDay() === 6) {
+      checkDate.setDate(checkDate.getDate() + 1);
+    } else if (checkDate.getDay() === 6) {
       // Saturday
-      checkDate.setUTCDate(checkDate.getUTCDate() + 2);
+      checkDate.setDate(checkDate.getDate() + 2);
     }
 
     // Calculate end date (30 days from now)
@@ -83,13 +93,13 @@ export class BookingService {
 
     while (currentDate <= endDate) {
       // Skip weekends
-      if (currentDate.getUTCDay() !== 0 && currentDate.getUTCDay() !== 6) {
+      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
         datesToCheck.push(new Date(currentDate));
       }
-      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Format dates for SQL query
+    // Format dates for SQL query using the corrected toLocalDate function
     const formattedDates = datesToCheck.map((date) => toLocalDate(date));
 
     // Get all bookings and blocked slots for these dates in a single query
@@ -129,9 +139,10 @@ export class BookingService {
 
       // Check minimum notice time
       TIME_SLOTS.forEach((slot) => {
-        const [hours] = slot.split(':').map(Number);
+        const [hours, minutes = 0] = slot.split(':').map(Number);
         const slotDate = new Date(date);
-        slotDate.setUTCHours(hours);
+        // Set hours in local timezone, not UTC
+        slotDate.setHours(hours, minutes, 0, 0);
 
         if (slotDate < minimumNoticeDate) {
           unavailableTimes.add(slot);
@@ -153,10 +164,12 @@ export class BookingService {
 
     // Check for existing upcoming bookings with the same email
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const todayStr = toLocalDate(today);
 
     const existingUpcomingBooking = await db.query.bookings.findFirst({
-      where: and(eq(bookings.email, email), eq(bookings.cancelled, false), gte(bookings.date, toLocalDate(today)))
+      where: and(eq(bookings.email, email), eq(bookings.cancelled, false), gte(bookings.date, todayStr))
     });
 
     if (existingUpcomingBooking) {
@@ -180,7 +193,7 @@ export class BookingService {
       name,
       email,
       company,
-      date: toLocalDate(date),
+      date: toLocalDate(date), // Format date consistently for database storage
       time,
       confirmationToken
     };
@@ -202,7 +215,7 @@ export class BookingService {
       id: newBooking.id,
       name,
       email,
-      date,
+      date, // Pass original date object for display formatting
       time,
       company,
       confirmationToken
@@ -251,11 +264,14 @@ export class BookingService {
       throw new AppError('Selected time slot is not available', 409);
     }
 
+    // Format the date consistently for database
+    const dateStr = toLocalDate(date);
+
     // Update the booking
     const [updatedBooking] = await db
       .update(bookings)
       .set({
-        date: toLocalDate(date),
+        date: dateStr,
         time
       })
       .where(eq(bookings.confirmationToken, token))
@@ -265,7 +281,7 @@ export class BookingService {
     await sendBookingUpdatedEmail({
       name: updatedBooking.name,
       email: updatedBooking.email,
-      newDate: date,
+      newDate: date, // Pass original date object for display formatting
       newTime: updatedBooking.time,
       company: updatedBooking.company
     });
@@ -288,6 +304,7 @@ export class BookingService {
     const [cancelledBooking] = await db.update(bookings).set(updateData).where(eq(bookings.confirmationToken, token)).returning();
 
     // Send cancellation email
+    // Convert string date from database to Date object for email formatting
     const bookingDate = new Date(booking.date);
     await sendBookingCancelledEmail({
       name: booking.name,
@@ -302,10 +319,11 @@ export class BookingService {
   // Get upcoming consultations with optimized query
   async getUpcomingConsultations() {
     const now = new Date();
+    const todayStr = toLocalDate(now);
 
     // Use a single optimized query with index hint
     const consultations = await db.query.bookings.findMany({
-      where: and(gte(bookings.date, toLocalDate(now)), eq(bookings.cancelled, false)),
+      where: and(gte(bookings.date, todayStr), eq(bookings.cancelled, false)),
       orderBy: [asc(bookings.date), asc(bookings.time)],
       // Limit the result to improve performance
       limit: 100
@@ -331,6 +349,7 @@ export class BookingService {
     const [cancelledBooking] = await db.update(bookings).set(updateData).where(eq(bookings.id, id)).returning();
 
     // Send cancellation email
+    // Convert string date from database to Date object
     const bookingDate = new Date(booking.date);
     await sendBookingCancelledEmail({
       name: booking.name,
