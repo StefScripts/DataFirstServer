@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import { randomBytes } from 'crypto';
-import { format, parse } from 'date-fns';
+import { formatDate, formatTime } from '../utils/dateHelpers';
 
 dotenv.config();
 
@@ -53,16 +53,6 @@ export class EmailService {
     return randomBytes(32).toString('hex');
   }
 
-  // Format time from 24-hour to 12-hour format
-  private formatTime(time: string): string {
-    return format(parse(time, 'HH:mm', new Date()), 'h:mm a');
-  }
-
-  // Format date to human-readable format
-  private formatDate(date: Date): string {
-    return format(date, 'EEEE, MMMM d, yyyy');
-  }
-
   // Send a booking confirmation email
   async sendBookingConfirmation({
     id,
@@ -81,8 +71,8 @@ export class EmailService {
     company: string;
     confirmationToken: string;
   }): Promise<void> {
-    const formattedDate = this.formatDate(date);
-    const formattedTime = this.formatTime(time);
+    const formattedDate = formatDate(date);
+    const formattedTime = formatTime(time);
 
     const baseUrl = this.getFrontendBaseUrl();
 
@@ -163,8 +153,8 @@ export class EmailService {
     newTime: string;
     company: string;
   }): Promise<void> {
-    const formattedNewDate = this.formatDate(newDate);
-    const formattedNewTime = this.formatTime(newTime);
+    const formattedNewDate = formatDate(newDate);
+    const formattedNewTime = formatTime(newTime);
 
     const mailOptions = {
       from: process.env.ZOHO_EMAIL,
@@ -209,8 +199,8 @@ export class EmailService {
 
   // Send booking cancelled email
   async sendBookingCancelledEmail({ name, email, date, time }: { name: string; email: string; date: Date; time: string }): Promise<void> {
-    const formattedDate = this.formatDate(date);
-    const formattedTime = this.formatTime(time);
+    const formattedDate = formatDate(date);
+    const formattedTime = formatTime(time);
 
     const baseUrl = this.getFrontendBaseUrl();
     const bookingUrl = `${baseUrl}/book`;
@@ -240,14 +230,19 @@ export class EmailService {
     try {
       await this.transporter.sendMail(mailOptions);
       // Notify admin about the cancelled booking
-      await this.sendAdminNotification({
-        type: 'cancelled',
-        name,
-        email,
-        date,
-        time,
-        company: '' // We don't have company info in the cancel email params
-      });
+      try {
+        await this.sendAdminNotification({
+          type: 'cancelled',
+          name,
+          email,
+          date,
+          time,
+          company: '' // We don't have company info in the cancel email params
+        });
+      } catch (error) {
+        // Log but don't rethrow admin notification errors
+        console.error('Error sending admin notification for cancellation:', error);
+      }
     } catch (error) {
       console.error('Error sending cancellation email:', error);
       throw new Error('Failed to send cancellation email');
@@ -270,8 +265,8 @@ export class EmailService {
     date: Date;
     time: string;
   }): Promise<void> {
-    const formattedDate = this.formatDate(date);
-    const formattedTime = this.formatTime(time);
+    const formattedDate = formatDate(date);
+    const formattedTime = formatTime(time);
 
     let subject = '';
     let content = '';

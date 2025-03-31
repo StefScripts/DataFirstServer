@@ -8,9 +8,15 @@ import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
 import { corsMiddleware } from './middlewares/cors';
+import { warmUpCache } from './middlewares/enhanced-cache';
+import { BookingService } from './services/bookingService';
 
 // Basic Express app setup without Vite integration
 const app = express();
+
+const bookingService = new BookingService();
+// Warm up the cache after server starts
+warmUpCache(bookingService).catch(console.error);
 
 // Middleware
 app.use(express.json());

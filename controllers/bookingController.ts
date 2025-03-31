@@ -45,6 +45,35 @@ export class BookingController {
   }
 
   /**
+   * Get the next available date with available slots
+   */
+  async getNextAvailableWithSlots(req: Request, res: Response) {
+    try {
+      // Get next available date
+      const result = await bookingService.getNextAvailableDate();
+
+      if (!result || !result.nextAvailableDate) {
+        return sendSuccessResponse(res, {
+          nextAvailableDate: null,
+          availability: { unavailableTimes: [] }
+        });
+      }
+
+      // Get availability for that date
+      const date = new Date(result.nextAvailableDate);
+      const availability = await bookingService.getAvailability(date);
+
+      // Return combined result
+      return sendSuccessResponse(res, {
+        nextAvailableDate: result.nextAvailableDate,
+        availability
+      });
+    } catch (error) {
+      return sendErrorResponse(res, 500, error.message || 'Error retrieving availability');
+    }
+  }
+
+  /**
    * Create a new booking
    */
   async createBooking(req: Request, res: Response) {
