@@ -66,16 +66,3 @@ export interface ContactFormMessageParams {
   company: string;
   message: string;
 }
-
-/**
- * Blog post data for creating/updating
- */
-export interface BlogPostData {
-  title: string;
-  content: string;
-  excerpt?: string;
-  metaDescription?: string;
-  tags?: string[];
-  featuredImage?: string;
-  published?: boolean;
-}
