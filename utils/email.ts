@@ -160,7 +160,7 @@ export async function sendBookingConfirmation({
   const formattedDate = formatDate(date);
   const formattedTime = formatTime(time);
 
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://book/datafirstseo.com' : 'http://localhost:5173';
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://book.datafirstseo.com' : 'http://localhost:5173';
 
   const confirmationUrl = `${baseUrl}/confirm/${confirmationToken}`;
   const managementUrl = `${baseUrl}/manage/${confirmationToken}`;
