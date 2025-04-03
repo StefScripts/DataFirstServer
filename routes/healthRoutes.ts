@@ -3,12 +3,10 @@ import { db } from '../db/index';
 import { testConnection } from '../db/index';
 import { BookingService } from '../services/bookingService';
 import { BlockedSlotsService } from '../services/blockedSlotsService';
-import { BlogService } from '../services/blogService';
 
 const router = Router();
 const bookingService = new BookingService();
 const blockedSlotsService = new BlockedSlotsService();
-const blogService = new BlogService();
 
 // Simple health check
 router.get('/health', async (req, res) => {
@@ -64,14 +62,6 @@ router.get('/warmup', async (req, res) => {
       results.services.blockedSlots = true;
     } catch (error) {
       console.error('Blocked slots service warm-up failed:', error);
-    }
-
-    // 4. Warm up blog service
-    try {
-      await blogService.getPublishedPosts();
-      results.services.blog = true;
-    } catch (error) {
-      console.error('Blog service warm-up failed:', error);
     }
 
     // Calculate total duration
