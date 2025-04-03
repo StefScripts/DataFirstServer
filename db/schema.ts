@@ -41,21 +41,6 @@ export const blockedSlots = pgTable('blocked_slots', {
   createdAt: timestamp('created_at').defaultNow()
 });
 
-// export const blogPosts = pgTable('blog_posts', {
-//   id: serial('id').primaryKey(),
-//   title: text('title').notNull(),
-//   slug: text('slug').unique().notNull(),
-//   content: text('content').notNull(),
-//   excerpt: text('excerpt').notNull(),
-//   metaDescription: text('meta_description').notNull(),
-//   authorId: integer('author_id').references(() => users.id),
-//   published: boolean('published').default(false),
-//   publishedAt: timestamp('published_at'),
-//   createdAt: timestamp('created_at').defaultNow(),
-//   updatedAt: timestamp('updated_at').defaultNow(),
-//   tags: jsonb('tags').default([]).notNull()
-// });
-
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 export type InsertUser = typeof users.$inferInsert;
@@ -70,11 +55,6 @@ export const insertBlockedSlotSchema = createInsertSchema(blockedSlots);
 export const selectBlockedSlotSchema = createSelectSchema(blockedSlots);
 export type InsertBlockedSlot = typeof blockedSlots.$inferInsert;
 export type SelectBlockedSlot = typeof blockedSlots.$inferSelect;
-
-// export const insertBlogPostSchema = createInsertSchema(blogPosts);
-// export const selectBlogPostSchema = createSelectSchema(blogPosts);
-// export type InsertBlogPost = typeof blogPosts.$inferInsert;
-// export type SelectBlogPost = typeof blogPosts.$inferSelect;
 
 export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens);
 export const selectPasswordResetTokenSchema = createSelectSchema(passwordResetTokens);
