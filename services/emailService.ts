@@ -45,7 +45,7 @@ export class EmailService {
     }
 
     // Otherwise use environment-specific defaults
-    return process.env.NODE_ENV === 'production' ? 'https://datafirstseo.com' : 'http://localhost:5173';
+    return process.env.NODE_ENV === 'production' ? 'https://book.datafirstseo.com' : 'http://localhost:5173';
   }
 
   // Generate a random token
@@ -76,8 +76,8 @@ export class EmailService {
 
     const baseUrl = this.getFrontendBaseUrl();
 
-    const confirmationUrl = `${baseUrl}/booking/confirm/${confirmationToken}`;
-    const managementUrl = `${baseUrl}/booking/manage/${confirmationToken}`;
+    const confirmationUrl = `${baseUrl}/confirm/${confirmationToken}`;
+    const managementUrl = `${baseUrl}/manage/${confirmationToken}`;
 
     const mailOptions = {
       from: process.env.ZOHO_EMAIL,
@@ -203,7 +203,7 @@ export class EmailService {
     const formattedTime = formatTime(time);
 
     const baseUrl = this.getFrontendBaseUrl();
-    const bookingUrl = `${baseUrl}/book`;
+    const bookingUrl = `${baseUrl}/`;
 
     const mailOptions = {
       from: process.env.ZOHO_EMAIL,

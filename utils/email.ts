@@ -160,10 +160,10 @@ export async function sendBookingConfirmation({
   const formattedDate = formatDate(date);
   const formattedTime = formatTime(time);
 
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://datafirstseo.com' : 'http://localhost:5173';
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://book/datafirstseo.com' : 'http://localhost:5173';
 
-  const confirmationUrl = `${baseUrl}/booking/confirm/${confirmationToken}`;
-  const managementUrl = `${baseUrl}/booking/manage/${confirmationToken}`;
+  const confirmationUrl = `${baseUrl}/confirm/${confirmationToken}`;
+  const managementUrl = `${baseUrl}/manage/${confirmationToken}`;
 
   const mailOptions = {
     from: process.env.ZOHO_EMAIL,
@@ -286,9 +286,9 @@ export async function sendBookingCancelledEmail({ name, email, date, time }: { n
   const formattedDate = formatDate(date);
   const formattedTime = formatTime(time);
 
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://datafirstseo.com' : 'http://localhost:5173';
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://book.datafirstseo.com' : 'http://localhost:5173';
 
-  const bookingUrl = `${baseUrl}/book`;
+  const bookingUrl = `${baseUrl}/`;
 
   const mailOptions = {
     from: process.env.ZOHO_EMAIL,
